@@ -1,0 +1,49 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper to check if user is admin
+    function isAdmin() {
+      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Users can read/write their own profiles
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId && 
+                    !request.resource.data.diff(resource.data).affectedKeys()
+                    .hasAny(['role', 'balance', 'totalTrades']);
+    }
+
+    // Projects/Stocks can be read by everyone, written by admin only
+    match /stocks/{stockId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Orders, Holdings, QuizAttempts, Watchlists - Private to user
+    match /orders/{orderId} {
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+    }
+
+    match /holdings/{userId}/items/{holdingId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /quizAttempts/{attemptId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+    }
+
+    match /quizQuestions/{questionId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    match /leaderboard/{boardId} {
+      allow read: if true;
+      allow write: if false; // Only via Cloud Functions
+    }
+  }
+}
