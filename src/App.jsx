@@ -10,7 +10,6 @@ import LandingPage from './pages/LandingPage';
 import Dashboard from './pages/Dashboard';
 import Market from './pages/Market';
 import StockDetail from './pages/StockDetail';
-import Portfolio from './pages/Portfolio';
 import History from './pages/History';
 import Watchlist from './pages/Watchlist';
 import Leaderboard from './pages/Leaderboard';
@@ -85,7 +84,6 @@ function App() {
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/market" element={<PrivateRoute><Market /></PrivateRoute>} />
           <Route path="/stock/:symbol" element={<PrivateRoute><StockDetail /></PrivateRoute>} />
-          <Route path="/portfolio" element={<PrivateRoute><Portfolio /></PrivateRoute>} />
           <Route path="/history" element={<PrivateRoute><History /></PrivateRoute>} />
           <Route path="/watchlist" element={<PrivateRoute><Watchlist /></PrivateRoute>} />
           <Route path="/leaderboard" element={<PrivateRoute><Leaderboard /></PrivateRoute>} />
