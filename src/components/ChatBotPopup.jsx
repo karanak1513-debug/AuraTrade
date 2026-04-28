@@ -59,25 +59,54 @@ export default function ChatBotPopup() {
       </AnimatePresence>
 
       <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+        whileHover={{ scale: 1.1, boxShadow: '0 0 30px rgba(16, 185, 129, 0.4)' }}
+        whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(!isOpen)}
         style={{
-          width: '60px',
-          height: '60px',
-          borderRadius: '30px',
-          background: isOpen ? 'var(--bg-tertiary)' : 'var(--accent-primary)',
-          color: isOpen ? 'var(--text-primary)' : 'white',
-          border: 'none',
+          width: '70px',
+          height: '70px',
+          borderRadius: '24px', // Squircle shape for uniqueness
+          background: 'var(--bg-tertiary)',
+          border: '2px solid var(--accent-primary)',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 8px 25px rgba(0,0,0,0.3)',
-          transition: 'background 0.3s ease'
+          boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+          overflow: 'hidden',
+          position: 'relative'
         }}
       >
-        {isOpen ? <X size={28} /> : <MessageCircle size={28} />}
+        {isOpen ? (
+          <X size={32} color="var(--accent-primary)" />
+        ) : (
+          <>
+            <img 
+              src="/bot-icon.png" 
+              alt="AuraBot" 
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+            />
+            <motion.div
+              animate={{
+                scale: [1, 1.2, 1],
+                opacity: [0.3, 0, 0.3],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              style={{
+                position: 'absolute',
+                width: '100%',
+                height: '100%',
+                background: 'var(--accent-primary)',
+                borderRadius: '50%',
+                zIndex: -1
+              }}
+            />
+          </>
+        )}
       </motion.button>
     </div>
   );
