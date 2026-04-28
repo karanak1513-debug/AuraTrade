@@ -99,6 +99,9 @@ function App() {
           
           {/* Admin Routes */}
           <Route path="/admin/*" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          
+          {/* Catch-all route to handle 404s on the client side */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </AppLayout>
     </Router>
