@@ -145,6 +145,36 @@ h1, h2, h3, h4, h5 {
   border-color: var(--text-muted);
 }
 
+.theme-toggle {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  position: relative;
+}
+
+.theme-toggle:hover {
+  transform: rotate(15deg) scale(1.1);
+  border-color: var(--accent-primary);
+  background: var(--glass-bg);
+}
+
+.theme-toggle svg {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-toggle:active {
+  transform: scale(0.9);
+}
+
 /* Layout */
 .container {
   max-width: 1400px;

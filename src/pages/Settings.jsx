@@ -1,28 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Settings as SettingsIcon, Moon, Sun, RefreshCcw, Trash2, Bell, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
 
 export default function Settings() {
   const { currentUser, resetTradingData, deleteAccount, logout } = useAuth();
   const navigate = useNavigate();
+  const { isDarkMode, toggleTheme } = useTheme();
   
-  const [isDarkMode, setIsDarkMode] = useState(localStorage.getItem('theme') !== 'light');
   const [notifications, setNotifications] = useState(true);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
 
-  const toggleTheme = () => {
-    const newTheme = !isDarkMode ? 'dark' : 'light';
-    setIsDarkMode(!isDarkMode);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-  };
-
-  useEffect(() => {
-    const currentTheme = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', currentTheme);
-  }, []);
 
   const handleReset = async () => {
     if (window.confirm("Are you sure you want to reset all trading data? This will wipe your portfolio and reset your balance to ₹10,00,000.")) {

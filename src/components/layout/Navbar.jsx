@@ -1,10 +1,12 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { LogOut, User, Bell, Search, Menu } from 'lucide-react';
+import { LogOut, User, Bell, Search, Menu, Moon, Sun } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function Navbar({ onMenuClick }) {
   const { currentUser, logout, userData } = useAuth();
+  const { isDarkMode, toggleTheme } = useTheme();
 
   return (
     <nav className="glass" style={{
@@ -24,7 +26,7 @@ export default function Navbar({ onMenuClick }) {
           <Menu size={20} />
         </button>
         <Link to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <div style={{ width: '32px', height: '32px', background: 'var(--accent-primary)', borderRadius: '8px', display: 'flex', alignItems: 'center', justify: 'center', fontWeight: 'bold' }}>A</div>
+          <div style={{ width: '32px', height: '32px', background: 'var(--accent-primary)', borderRadius: '8px', display: 'flex', alignItems: 'center', justify: 'center', fontWeight: 'bold', color: '#fff' }}>A</div>
           <span style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.5px' }} className="text-gradient">AURATRADE</span>
         </Link>
       </div>
@@ -47,6 +49,14 @@ export default function Navbar({ onMenuClick }) {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <button 
+          onClick={toggleTheme}
+          className="theme-toggle"
+          title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+        >
+          {isDarkMode ? <Sun size={20} style={{ color: '#FDB813' }} /> : <Moon size={20} style={{ color: '#5A67D8' }} />}
+        </button>
+
         {currentUser ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <Link to="/profile">
