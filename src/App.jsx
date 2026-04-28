@@ -23,6 +23,7 @@ import Signup from './pages/auth/Signup';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import Wallet from './pages/Wallet';
 import Tips from './pages/Tips';
+import ChatBotPopup from './components/ChatBotPopup';
 
 function PrivateRoute({ children }) {
   const { currentUser } = useAuth();
@@ -103,6 +104,7 @@ function App() {
           {/* Catch-all route to handle 404s on the client side */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
+        <ChatBotPopup />
       </AppLayout>
     </Router>
   );
