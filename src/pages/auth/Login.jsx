@@ -20,7 +20,22 @@ export default function Login() {
       await login(email, password);
       navigate('/dashboard');
     } catch (e) {
-      setError('Failed to log in. Please check your credentials.');
+      console.error("Login Error:", e);
+      setError('Failed to log in. ' + (e.message || 'Please check your credentials.'));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleGoogleLogin() {
+    try {
+      setError('');
+      setLoading(true);
+      await loginWithGoogle();
+      navigate('/dashboard');
+    } catch (e) {
+      console.error("Google Login Error:", e);
+      setError('Failed to sign in with Google. ' + (e.message || ''));
     } finally {
       setLoading(false);
     }
@@ -80,9 +95,14 @@ export default function Login() {
           <div style={{ height: '1px', flex: 1, background: 'var(--border-color)' }} />
         </div>
 
-        <button onClick={loginWithGoogle} className="btn btn-secondary" style={{ width: '100%', display: 'flex', gap: '0.5rem' }}>
-          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/0/google.svg" alt="G" style={{ width: '18px' }} />
-          Continue with Google
+        <button 
+          onClick={handleGoogleLogin} 
+          disabled={loading}
+          className="btn btn-secondary" 
+          style={{ width: '100%', display: 'flex', gap: '0.5rem', justifyContent: 'center', alignItems: 'center' }}
+        >
+          <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="G" style={{ width: '18px' }} />
+          {loading ? 'Connecting...' : 'Continue with Google'}
         </button>
 
         <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>

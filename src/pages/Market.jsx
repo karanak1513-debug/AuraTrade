@@ -32,17 +32,17 @@ export default function Market() {
       }), timeoutPromise]);
       
       alert(`Added ${stock.symbol} to watchlist`);
-    } catch (e) {
+      } catch (e) {
       if (e.message?.includes("Database") || 
           e.message?.includes("database") || 
           e.message?.includes("not exist") || 
           e.message?.includes("not found") || 
           e.message?.includes("Timeout")) {
-        const localWatchlist = JSON.parse(localStorage.getItem('mockWatchlist') || '[]');
+        const localWatchlist = JSON.parse(localStorage.getItem(`mockWatchlist_${currentUser.uid}`) || '[]');
         if (localWatchlist.find(s => s.symbol === stock.symbol)) return alert('Already in watchlist');
         
         localWatchlist.push({ id: 'local_' + stock.symbol, symbol: stock.symbol, name: stock.name });
-        localStorage.setItem('mockWatchlist', JSON.stringify(localWatchlist));
+        localStorage.setItem(`mockWatchlist_${currentUser.uid}`, JSON.stringify(localWatchlist));
         window.dispatchEvent(new Event('mockWatchlistUpdate'));
         alert(`(Offline Mode) Added ${stock.symbol} to watchlist`);
       } else {

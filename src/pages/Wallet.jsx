@@ -11,9 +11,10 @@ export default function Wallet() {
   const [transactions, setTransactions] = useState([]);
 
   useEffect(() => {
+    if (!currentUser) return;
     // Attempt offline simulation fetch
     const syncMockTx = () => {
-      const mockTx = JSON.parse(localStorage.getItem('mockTransactions') || '[]');
+      const mockTx = JSON.parse(localStorage.getItem(`mockTransactions_${currentUser.uid}`) || '[]');
       setTransactions(mockTx);
     };
     syncMockTx();
@@ -21,10 +22,10 @@ export default function Wallet() {
     // Listen for cross-page live updates
     window.addEventListener('mockBalanceUpdate', syncMockTx);
     return () => window.removeEventListener('mockBalanceUpdate', syncMockTx);
-  }, []);
+  }, [currentUser]);
 
-  // Fallback to 1M if undefined to avoid undefined UI errors across the app
-  const currentBalance = userData?.balance ?? 1000000;
+  // Fallback to 0 if undefined to avoid undefined UI errors across the app
+  const currentBalance = userData?.balance ?? 0;
 
   const handleTopUp = async (amount) => {
     if (!currentUser) return;
@@ -52,12 +53,12 @@ export default function Wallet() {
           e.message?.includes("not exist") || 
           e.message?.includes("not found") || 
           e.message?.includes("Timeout")) {
-        const fallback = Number(localStorage.getItem('mockBalance') || currentBalance);
+        const fallback = Number(localStorage.getItem(`mockBalance_${currentUser.uid}`) || currentBalance);
         const newBalance = fallback + amount;
-        localStorage.setItem('mockBalance', newBalance);
+        localStorage.setItem(`mockBalance_${currentUser.uid}`, newBalance);
         
         // Log to Wallet Transaction History
-        const mockTransactions = JSON.parse(localStorage.getItem('mockTransactions') || '[]');
+        const mockTransactions = JSON.parse(localStorage.getItem(`mockTransactions_${currentUser.uid}`) || '[]');
         mockTransactions.unshift({
           id: Date.now().toString(),
           type: 'MANUAL_DEPOSIT',
@@ -65,7 +66,7 @@ export default function Wallet() {
           amount: amount,
           time: new Date().toLocaleString()
         });
-        localStorage.setItem('mockTransactions', JSON.stringify(mockTransactions));
+        localStorage.setItem(`mockTransactions_${currentUser.uid}`, JSON.stringify(mockTransactions));
         
         window.dispatchEvent(new Event('mockBalanceUpdate'));
         alert(`(Offline Mode) ₹${amount.toLocaleString()} successfully minted for practice!`);

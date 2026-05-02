@@ -44,7 +44,7 @@ export default function StockDetail() {
     setLoading(true);
     
     const totalCost = stock.price * qty;
-    const currentBalance = userData?.balance ?? Number(localStorage.getItem('mockBalance')) ?? 1000000;
+    const currentBalance = userData?.balance ?? Number(localStorage.getItem(`mockBalance_${currentUser.uid}`)) ?? 0;
     
     try {
       // 1. Online attempt with Timeout
@@ -57,7 +57,7 @@ export default function StockDetail() {
           const userRef = doc(db, "users", currentUser.uid);
           const userSnap = await transaction.get(userRef);
           
-          let dbBalance = 1000000;
+          let dbBalance = 0;
           if (userSnap.exists() && userSnap.data().balance !== undefined) {
              dbBalance = userSnap.data().balance;
           }
@@ -106,7 +106,7 @@ export default function StockDetail() {
           e.message?.includes("not found") || 
           e.message?.includes("Timeout")) {
         console.warn("Firestore Database Not Found. Switching to Offline practice mode.");
-        const fallback = Number(localStorage.getItem('mockBalance') || currentBalance);
+        const fallback = Number(localStorage.getItem(`mockBalance_${currentUser.uid}`) || currentBalance);
         
         if (type === 'BUY' && fallback < totalCost) {
            alert("Insufficient Balance. Mint tokens in your Wallet.");
@@ -115,10 +115,10 @@ export default function StockDetail() {
         }
         
         const newLocalBalance = fallback + (type === 'BUY' ? -totalCost : totalCost);
-        localStorage.setItem('mockBalance', newLocalBalance);
+        localStorage.setItem(`mockBalance_${currentUser.uid}`, newLocalBalance);
         
         // Record Offline Order History
-        const mockOrders = JSON.parse(localStorage.getItem('mockOrders') || '[]');
+        const mockOrders = JSON.parse(localStorage.getItem(`mockOrders_${currentUser.uid}`) || '[]');
         mockOrders.unshift({
           id: Date.now().toString(),
           symbol: stock.symbol,
@@ -130,10 +130,10 @@ export default function StockDetail() {
           time: new Date().toLocaleString(),
           status: 'EXECUTED'
         });
-        localStorage.setItem('mockOrders', JSON.stringify(mockOrders));
+        localStorage.setItem(`mockOrders_${currentUser.uid}`, JSON.stringify(mockOrders));
         
         // Record Offline Wallet Transaction History
-        const mockTransactions = JSON.parse(localStorage.getItem('mockTransactions') || '[]');
+        const mockTransactions = JSON.parse(localStorage.getItem(`mockTransactions_${currentUser.uid}`) || '[]');
         mockTransactions.unshift({
           id: Date.now().toString(),
           type: type === 'BUY' ? 'TRADE_DEDUCTION' : 'TRADE_REVENUE',
@@ -141,7 +141,7 @@ export default function StockDetail() {
           amount: type === 'BUY' ? -totalCost : totalCost,
           time: new Date().toLocaleString()
         });
-        localStorage.setItem('mockTransactions', JSON.stringify(mockTransactions));
+        localStorage.setItem(`mockTransactions_${currentUser.uid}`, JSON.stringify(mockTransactions));
         
         // Update local state and trigger UI refreshes
         window.dispatchEvent(new Event('mockBalanceUpdate'));
@@ -251,7 +251,7 @@ export default function StockDetail() {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-              <Info size={14} /> Available Balance: ₹{(userData?.balance ?? 1000000).toLocaleString()}
+              <Info size={14} /> Available Balance: ₹{(userData?.balance ?? 0).toLocaleString()}
             </div>
 
             <button 

@@ -37,7 +37,7 @@ export default function Dashboard() {
 
     // Offline Sync for Dashboard
     const syncLocal = () => {
-      const local = JSON.parse(localStorage.getItem('mockWatchlist') || '[]');
+      const local = JSON.parse(localStorage.getItem(`mockWatchlist_${currentUser.uid}`) || '[]');
       setWatchlistData(prev => local.length > 0 ? local : prev);
     };
     window.addEventListener('mockWatchlistUpdate', syncLocal);
@@ -109,7 +109,7 @@ export default function Dashboard() {
       <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
         <StatCard 
           title="Virtual Cash" 
-          value={`₹${(userData?.balance ?? 1000000).toLocaleString()}`} 
+          value={`₹${(userData?.balance ?? 0).toLocaleString()}`} 
           icon={Wallet} 
           color="16, 185, 129" 
         />

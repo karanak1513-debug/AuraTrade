@@ -10,7 +10,7 @@ export default function Signup() {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signup } = useAuth();
+  const { signup, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
@@ -22,6 +22,20 @@ export default function Signup() {
       navigate('/dashboard');
     } catch (e) {
       setError('Failed to create an account. ' + e.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleGoogleLogin() {
+    try {
+      setError('');
+      setLoading(true);
+      await loginWithGoogle();
+      navigate('/dashboard');
+    } catch (e) {
+      console.error("Google Login Error:", e);
+      setError('Failed to sign in with Google. ' + (e.message || ''));
     } finally {
       setLoading(false);
     }
@@ -93,6 +107,22 @@ export default function Signup() {
             {loading ? 'Creating Account...' : 'Sign Up'} <UserPlus size={18} />
           </button>
         </form>
+
+        <div style={{ margin: '1.5rem 0', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ height: '1px', flex: 1, background: 'var(--border-color)' }} />
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>OR</span>
+          <div style={{ height: '1px', flex: 1, background: 'var(--border-color)' }} />
+        </div>
+
+        <button 
+          onClick={handleGoogleLogin} 
+          disabled={loading}
+          className="btn btn-secondary" 
+          style={{ width: '100%', display: 'flex', gap: '0.5rem', justifyContent: 'center', alignItems: 'center' }}
+        >
+          <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="G" style={{ width: '18px' }} />
+          {loading ? 'Connecting...' : 'Continue with Google'}
+        </button>
 
         <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
           Already have an account? <Link to="/login" style={{ color: 'var(--accent-primary)', textDecoration: 'none', fontWeight: 600 }}>Log In</Link>

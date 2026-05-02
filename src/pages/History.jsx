@@ -1,14 +1,96 @@
 import React, { useState, useEffect } from 'react';
 import { History as HistoryIcon, Download, Filter } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { db } from '../firebase/config';
+import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 
 export default function History() {
   const [orders, setOrders] = useState([]);
+  const { currentUser } = useAuth();
 
   useEffect(() => {
-    // Attempt to pull any offline mock orders seamlessly
-    const mockOrders = JSON.parse(localStorage.getItem('mockOrders') || '[]');
-    setOrders(mockOrders);
-  }, []);
+    if (!currentUser) return;
+
+    let unsubscribe = () => {};
+    
+    try {
+      // 1. Try to fetch from Firestore
+      const q = query(
+        collection(db, "orders"), 
+        where("uid", "==", currentUser.uid),
+        orderBy("createdAt", "desc")
+      );
+
+      unsubscribe = onSnapshot(q, (snapshot) => {
+        if (!snapshot.empty) {
+          const items = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+              id: doc.id,
+              ...data,
+              time: data.createdAt?.toDate ? data.createdAt.toDate().toLocaleString() : data.time || 'Pending'
+            };
+          });
+          setOrders(items);
+        } else {
+          // If Firestore is empty, check local storage
+          const localOrders = JSON.parse(localStorage.getItem(`mockOrders_${currentUser.uid}`) || '[]');
+          setOrders(localOrders);
+        }
+      }, (error) => {
+        console.warn("Firestore History unavailable, falling back to local:", error);
+        const localOrders = JSON.parse(localStorage.getItem(`mockOrders_${currentUser.uid}`) || '[]');
+        setOrders(localOrders);
+      });
+    } catch (e) {
+      const localOrders = JSON.parse(localStorage.getItem(`mockOrders_${currentUser.uid}`) || '[]');
+      setOrders(localOrders);
+    }
+
+    // Listen for local updates (from trades)
+    const handleLocalUpdate = () => {
+      const localOrders = JSON.parse(localStorage.getItem(`mockOrders_${currentUser.uid}`) || '[]');
+      setOrders(prev => {
+        // If we have Firestore data, don't overwrite it unless local is newer/different
+        // For simplicity in practice mode, we show local if it's the primary source
+        return localOrders.length > 0 ? localOrders : prev;
+      });
+    };
+    window.addEventListener('mockBalanceUpdate', handleLocalUpdate);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('mockBalanceUpdate', handleLocalUpdate);
+    };
+  }, [currentUser]);
+
+  function handleExportCSV() {
+    if (orders.length === 0) return;
+
+    const headers = ["Time", "Type", "Symbol", "Qty", "Price", "Total", "Status"];
+    const csvContent = [
+      headers.join(","),
+      ...orders.map(o => [
+        `"${o.time}"`,
+        o.type,
+        o.symbol,
+        o.qty,
+        o.price,
+        o.total,
+        o.status
+      ].join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `order_history_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -19,7 +101,13 @@ export default function History() {
         </div>
         <div style={{ display: 'flex', gap: '0.75rem' }}>
           <button className="btn btn-secondary"><Filter size={18} /> Filter</button>
-          <button className="btn btn-secondary"><Download size={18} /> Export CSV</button>
+          <button 
+            onClick={handleExportCSV} 
+            className="btn btn-secondary"
+            disabled={orders.length === 0}
+          >
+            <Download size={18} /> Export CSV
+          </button>
         </div>
       </div>
 

@@ -30,7 +30,7 @@ export default function Watchlist() {
 
     // Offline Sync
     const syncLocal = () => {
-      const local = JSON.parse(localStorage.getItem('mockWatchlist') || '[]');
+      const local = JSON.parse(localStorage.getItem(`mockWatchlist_${currentUser.uid}`) || '[]');
       setWatchlistData(prev => local.length > 0 ? local : prev);
       setLoading(false);
     };
@@ -47,9 +47,9 @@ export default function Watchlist() {
     try {
       if (id.startsWith('local_')) {
         const symbol = id.split('_')[1];
-        const local = JSON.parse(localStorage.getItem('mockWatchlist') || '[]');
+        const local = JSON.parse(localStorage.getItem(`mockWatchlist_${currentUser.uid}`) || '[]');
         const updated = local.filter(s => s.symbol !== symbol);
-        localStorage.setItem('mockWatchlist', JSON.stringify(updated));
+        localStorage.setItem(`mockWatchlist_${currentUser.uid}`, JSON.stringify(updated));
         window.dispatchEvent(new Event('mockWatchlistUpdate'));
         return;
       }

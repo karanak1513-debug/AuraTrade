@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
       name: name,
       email: email,
       role: 'user',
-      balance: 1000000,
+      balance: 0,
       totalPortfolioValue: 0,
       totalProfitLoss: 0,
       joinedAt: serverTimestamp(),
@@ -71,13 +71,13 @@ export function AuthProvider({ children }) {
     
     if (!userSnap.exists()) {
       // Create new user if first time Google login
-      await setDoc(userRef, {
+      const newUserDoc = {
         uid: user.uid,
-        name: user.displayName,
+        name: user.displayName || 'User',
         email: user.email,
         photoURL: user.photoURL,
         role: 'user',
-        balance: 1000000,
+        balance: 0,
         totalPortfolioValue: 0,
         totalProfitLoss: 0,
         joinedAt: serverTimestamp(),
@@ -87,7 +87,11 @@ export function AuthProvider({ children }) {
         totalTrades: 0,
         learningStreak: 0,
         status: 'active'
-      });
+      };
+      await setDoc(userRef, newUserDoc);
+      setUserData(newUserDoc);
+    } else {
+      setUserData(userSnap.data());
     }
     return res;
   }
@@ -121,7 +125,8 @@ export function AuthProvider({ children }) {
 
     // Offline Simulation Sync
     const syncMockBalance = () => {
-      const mb = localStorage.getItem('mockBalance');
+      if (!currentUser) return;
+      const mb = localStorage.getItem(`mockBalance_${currentUser.uid}`);
       if (mb) {
         setUserData(prev => ({ ...(prev || {}), balance: Number(mb) }));
       }
@@ -147,7 +152,7 @@ export function AuthProvider({ children }) {
     // 1. Reset Firestore balance and stats
     const userRef = doc(db, "users", currentUser.uid);
     await setDoc(userRef, {
-      balance: 1000000,
+      balance: 0,
       totalPortfolioValue: 0,
       totalProfitLoss: 0,
       totalTrades: 0,
@@ -166,9 +171,9 @@ export function AuthProvider({ children }) {
     await batch.commit();
 
     // 3. Clear LocalStorage
-    localStorage.removeItem('mockBalance');
-    localStorage.removeItem('mockOrders');
-    localStorage.removeItem('watchlist');
+    localStorage.removeItem(`mockBalance_${currentUser.uid}`);
+    localStorage.removeItem(`mockOrders_${currentUser.uid}`);
+    localStorage.removeItem(`mockWatchlist_${currentUser.uid}`);
     
     // Dispatch event to sync UI
     window.dispatchEvent(new Event('mockBalanceUpdate'));
